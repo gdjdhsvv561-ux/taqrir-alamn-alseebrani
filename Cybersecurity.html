@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Security Console</title>
+<style>
+*{box-sizing:border-box}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  color:#d7ffd9;
+}
+body{
+  font-family:Consolas,"Courier New",monospace;
+  overflow:hidden;
+}
+#terminal{
+  direction:ltr;
+  text-align:left;
+  height:100vh;
+  padding:24px;
+  overflow:hidden;
+  background:#000;
+  font-size:15px;
+  line-height:1.55;
+  text-shadow:0 0 5px rgba(0,255,80,.35);
+}
+.green{color:#43ff6b}
+.gray{color:#78917e}
+.red{color:#ff3030}
+.yellow{color:#ffe45c}
+.blue{color:#61b7ff}
+.big{
+  font-size:19px;
+  font-weight:bold;
+  text-shadow:0 0 12px currentColor;
+}
+.cursor{
+  display:inline-block;
+  width:9px;
+  height:17px;
+  background:#43ff6b;
+  vertical-align:-3px;
+  animation:blink .65s infinite;
+}
+@keyframes blink{50%{opacity:0}}
+#notice{
+  display:none;
+  position:fixed;
+  right:20px;
+  bottom:15px;
+  color:#45634d;
+  font-size:11px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="terminal"></div>
+<div id="notice">session active</div>
+
+<script>
+const terminal=document.getElementById("terminal");
+const notice=document.getElementById("notice");
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+function line(text="",cls=""){
+  const d=document.createElement("div");
+  d.className=cls;
+  d.textContent=text;
+  terminal.appendChild(d);
+  terminal.scrollTop=terminal.scrollHeight;
+}
+
+async function typeText(text,cls="green",speed=7){
+  const d=document.createElement("div");
+  d.className=cls;
+  terminal.appendChild(d);
+
+  for(const char of text){
+    d.textContent+=char;
+    await sleep(speed);
+  }
+
+  terminal.scrollTop=terminal.scrollHeight;
+}
+
+async function command(cmd,output,delay=400){
+  await typeText("root@shadow-node:~# "+cmd,"green",4);
+  await sleep(delay);
+
+  for(const item of output){
+    line(item[0],item[1]);
+    await sleep(90);
+  }
+
+  await sleep(180);
+}
+
+async function progress(commandText){
+  await typeText("root@shadow-node:~# "+commandText,"green",4);
+  await sleep(250);
+
+  const d=document.createElement("div");
+  d.className="yellow";
+  terminal.appendChild(d);
+
+  for(let i=0;i<=40;i++){
+    const percent=Math.round(i*2.5);
+    d.textContent="["+"=".repeat(i)+" ".repeat(40-i)+"] "+percent+"%";
+    await sleep(35+Math.random()*35);
+  }
+
+  await sleep(250);
+}
+
+async function run(){
+
+  /* بداية المقلب */
+  line("╔══════════════════════════════════════════╗","red");
+  line("║        WARNING: INTRUSION DETECTED       ║","red");
+  line("║                                          ║","red");
+  line("║          سيتم اختراق النظام...            ║","red");
+  line("╚══════════════════════════════════════════╝","red");
+  line("");
+  line("INITIALIZING ATTACK SEQUENCE...","yellow");
+  line("TARGET LOCKED","yellow");
+  line("REMOTE SESSION PREPARING...","yellow");
+  line("");
+
+  await sleep(1400);
+
+  line("Linux Security Console v4.8.2","gray");
+  line("Kernel 6.8.0-x86_64","gray");
+  line("Initializing secure session...","gray");
+  line("");
+
+  await command("whoami",[
+    ["root","green"]
+  ],300);
+
+  await command("ip addr show eth0",[
+    ["2: eth0: <BROADCAST,MULTICAST,UP> mtu 1500","gray"],
+    ["    inet 192.0.2.45/24 brd 192.0.2.255","blue"],
+    ["    inet6 2001:db8::45/64","blue"]
+  ],350);
+
+  await command("nmap -sV 192.0.2.45",[
+    ["Starting Nmap 7.95 ...","gray"],
+    ["Host is up (0.021s latency).","green"],
+    ["",""],
+    ["PORT       STATE   SERVICE      VERSION","gray"],
+    ["22/tcp     open    ssh          OpenSSH 9.6","green"],
+    ["80/tcp     open    http         nginx 1.26","green"],
+    ["443/tcp    open    https        nginx 1.26","green"],
+    ["8080/tcp   open    http-proxy   gateway","green"],
+    ["",""],
+    ["Nmap done: 1 IP address scanned","gray"]
+  ],500);
+
+  await command("ssh admin@192.0.2.45",[
+    ["Connecting to 192.0.2.45...","gray"],
+    ["Authenticating using public key...","yellow"],
+    ["Identity accepted.","green"],
+    ["Session initialized.","green"]
+  ],500);
+
+  await command("sudo -l",[
+    ["User admin may run the following commands:","gray"],
+    ["(ALL) NOPASSWD: /usr/local/bin/system-check","green"]
+  ],350);
+
+  await progress("sudo /usr/local/bin/system-check");
+
+  line("[+] Checking services ............. OK","green");
+  line("[+] Checking permissions .......... OK","green");
+  line("[+] Checking processes ............ OK","green");
+  line("[+] Checking security layer ....... OK","green");
+  line("");
+
+  await command("./access --target 192.0.2.45",[
+    ["[*] Loading access modules...","yellow"],
+    ["[*] Negotiating session...","yellow"],
+    ["[*] Verifying access token...","yellow"],
+    ["[+] Session established.","green"],
+    ["[+] Privilege level: administrator","green"]
+  ],500);
+
+  await progress("./file-index --scan");
+
+  line("[+] 1842 objects indexed","green");
+  line("[+] Directory structure mapped","green");
+  line("[+] System permissions analyzed","green");
+  line("");
+
+  await progress("./decrypt --mode=simulation");
+
+  line("[*] Loading encryption engine...","yellow");
+  line("[*] Generating key sequence...","yellow");
+  line("[*] Validating key...","yellow");
+  await sleep(500);
+  line("[+] Key accepted.","green");
+  line("");
+
+  await progress("./decrypt --finalize");
+
+  line("");
+  line("[+] Authentication bypass ........ COMPLETE","green");
+  line("[+] Privilege escalation ........ COMPLETE","green");
+  line("[+] System access ............... COMPLETE","green");
+  line("[+] Control channel ............. ACTIVE","green");
+  line("");
+
+  await sleep(900);
+
+  line("╔══════════════════════════════════════════╗","red");
+  line("║          SYSTEM COMPROMISED              ║","red");
+  line("║                                          ║","red");
+  line("║          تم الاختراق بنجاح                ║","red");
+  line("╚══════════════════════════════════════════╝","red");
+
+  line("");
+  line("ACCESS LEVEL : ROOT","big green");
+  line("SESSION      : ADMINISTRATOR","green");
+  line("TARGET       : COMPROMISED","red");
+  line("STATUS       : ACCESS GRANTED","green");
+  line("");
+
+  await sleep(1000);
+
+  line("root@shadow-node:~# ","green");
+
+  const cursor=document.createElement("span");
+  cursor.className="cursor";
+  terminal.lastChild.appendChild(cursor);
+
+  notice.style.display="block";
+}
+
+run();
+</script>
+
+</body>
+</html>
